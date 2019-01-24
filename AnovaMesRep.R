@@ -30,26 +30,30 @@ with(relaxo.long,xyplot(Durée~Semaine,group=Sujet,type="l"))
 ezStats(data = relaxo.long, dv = Durée, within = Semaine, wid = Sujet)
 ezPlot(data = relaxo.long, dv = Durée, within = Semaine, wid = Sujet, x=.(Semaine))
 
-mod1 <- ezANOVA(data = relaxo.long, dv = Durée, within = Semaine, wid = Sujet, return_aov = TRUE)
+mod.cours <- ezANOVA(data = relaxo.long, dv = Durée, within = Semaine, wid = Sujet, return_aov = TRUE)
 if(!require("dae")){install.packages("dae")}
-mod1.res <- dae::residuals.aovlist(mod1$aov)
-shapiro.test(mod1.res)
-with(relaxo.long,xyplot(mod1.res~Semaine|Sujet))
+mod.cours.res <- dae::residuals.aovlist(mod.cours$aov)
+shapiro.test(mod.cours.res)
+qqnorm(mod.cours.res)
+qqline(mod.cours.res)
+with(relaxo.long,xyplot(mod.cours.res~Semaine|Sujet))
 
-mod1
+mod.cours
 
 #Idem à ce que l'on a avec aov
 #summary(aov(Durée~Semaine+Sujet,data=relaxo.long))
 
-if(!require("emmeans")){install.packages("emmeans")}
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
 library(emmeans)
-emm <- emmeans(mod1$aov, ~ Semaine)
+emm <- emmeans(mod.cours$aov, ~ Semaine)
 emm
 
 pairs(emm, adjust = "Holm")
 pairs(emm, adjust = "Tukey")
 contrast(emm,  "tukey")
 contrast(emm,  "dunnett", ref="S2")
+
+
 
 # custom contrasts
 contrast(
@@ -131,6 +135,19 @@ mod1
 #Idem à ce que l'on a avec aov
 #summary(aov(Pression~Dose+Lapin,data=lapins.long))
 
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
+library(emmeans)
+emm <- emmeans(mod1$aov, ~ Dose)
+emm
+
+pairs(emm, adjust = "Holm")
+pairs(emm, adjust = "Tukey")
+contrast(emm,  "tukey")
+contrast(emm,  "dunnett", ref="0.1")
+
+
+
+
 ezPerm(data = lapins.long, dv = Pression, within = Dose, wid = Lapin)
 
 #IC boostrap
@@ -194,6 +211,17 @@ shapiro.test(mod2.res)
 with(Notes.long,xyplot(mod2.res~Instrument|Participant))
 
 mod2
+
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
+library(emmeans)
+emm <- emmeans(mod2$aov, ~ Instrument)
+emm
+
+pairs(emm, adjust = "Holm")
+pairs(emm, adjust = "Tukey")
+contrast(emm,  "tukey")
+contrast(emm,  "dunnett", ref="Pinceau")
+
 
 ezPerm(data =Notes.long, dv = Note, within = Instrument, wid = Participant)
 
@@ -262,6 +290,19 @@ with(Conduite.long,xyplot(mod3.res~Qte_alc_sang|Sujet))
 
 mod3
 
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
+library(emmeans)
+emm <- emmeans(mod3$aov, ~ Qte_alc_sang)
+emm
+
+pairs(emm, adjust = "Holm")
+pairs(emm, adjust = "Tukey")
+contrast(emm,  "tukey")
+contrast(emm,  "dunnett", ref="0.08")
+
+
+
+
 ezPerm(data =Conduite.long, dv = Erreurs, within = Qte_alc_sang, wid = Sujet)
 
 #IC boostrap
@@ -320,6 +361,24 @@ with(Promotion.long,xyplot(mod.cours2.res~Période|Campagne,group=Supermarché))
 
 mod.cours2
 
+
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
+library(emmeans)
+emm <- emmeans(mod.cours2$aov, ~ Période)
+emm
+
+pairs(emm, adjust = "Holm")
+pairs(emm, adjust = "Tukey")
+contrast(emm,  "tukey")
+contrast(emm,  "dunnett", ref="Avant")
+
+
+
+
+
+
+
+
 ezPerm(data =Promotion.long, dv = Ventes, within = Période, between = Campagne, wid = Supermarché)
 
 #IC boostrap
@@ -368,6 +427,21 @@ if(!require("dae")){install.packages("dae")}
 mod4.res <- dae::residuals.aovlist(mod4$aov)
 shapiro.test(mod4.res)
 with(Presentation.long,xyplot(mod4.res~Relevé|Type_de_presentation,group=Magasin))
+
+mod4
+
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
+library(emmeans)
+emm <- emmeans(mod4$aov, ~ Relevé)
+emm
+
+pairs(emm, adjust = "Holm")
+pairs(emm, adjust = "Tukey")
+contrast(emm,  "tukey")
+contrast(emm,  "dunnett", ref="1")
+
+
+
 
 ezPerm(data =Presentation.long, dv = Ventes, within = Relevé, between = Type_de_presentation, wid = Magasin)
 
