@@ -49,7 +49,9 @@ emm <- emmeans(mod.cours$aov, ~ Semaine)
 emm
 
 pairs(emm, adjust = "Holm")
+plot(pairs(emm, adjust = "Holm"))#not usable to sig diff iff IC overlaps 0
 pairs(emm, adjust = "Tukey")
+plot(pairs(emm, adjust = "Tukey"))
 contrast(emm,  "tukey")
 contrast(emm,  "dunnett", ref="S2")
 
@@ -142,8 +144,9 @@ emm
 
 pairs(emm, adjust = "Holm")
 pairs(emm, adjust = "Tukey")
+plot(pairs(emm, adjust = "Tukey"))
 contrast(emm,  "tukey")
-contrast(emm,  "dunnett", ref="0.1")
+plot(contrast(emm,  "dunnett", ref="0.1"))
 
 
 
@@ -219,6 +222,7 @@ emm
 
 pairs(emm, adjust = "Holm")
 pairs(emm, adjust = "Tukey")
+plot(pairs(emm, adjust = "Tukey"))
 contrast(emm,  "tukey")
 contrast(emm,  "dunnett", ref="Pinceau")
 
@@ -297,6 +301,7 @@ emm
 
 pairs(emm, adjust = "Holm")
 pairs(emm, adjust = "Tukey")
+plot(pairs(emm, adjust = "Tukey"))
 contrast(emm,  "tukey")
 contrast(emm,  "dunnett", ref="0.08")
 
@@ -369,6 +374,7 @@ emm
 
 pairs(emm, adjust = "Holm")
 pairs(emm, adjust = "Tukey")
+plot(pairs(emm, adjust = "Tukey"))
 contrast(emm,  "tukey")
 contrast(emm,  "dunnett", ref="Avant")
 
@@ -437,6 +443,7 @@ emm
 
 pairs(emm, adjust = "Holm")
 pairs(emm, adjust = "Tukey")
+plot(pairs(emm, adjust = "Tukey"))
 contrast(emm,  "tukey")
 contrast(emm,  "dunnett", ref="1")
 
@@ -481,25 +488,80 @@ EXERTYPE DIET INDIV PULSE EXERTYPE DIET INDIV PULSE EXERTYPE DIET INDIV PULSE
 
 
 
+calcs=matrix(c(
+1,"Jones",3.1,7.5,2.5,5.1,
+2,"Williams",3.8,8.1,2.8,5.3,
+3,"Adams",3.0,7.6,2.0,4.9,
+4,"Dixon",3.4,7.8,2.7,5.5,
+5,"Erickson",3.3,6.9,2.5,5.4,
+6,"Maynes",3.6,7.8,2.4,4.8
+),nrow=6,byrow=TRUE)
+colnames(calcs) <- c("ind", "Sujet", "Temps.ps.nm", "Temps.ps.am", "Temps.pi.nm", "Temps.pi.am")
+calcs<-as.data.frame(calcs)
+calcs[[3]]<-as.numeric(as.character(calcs[[3]]))
+calcs[[4]]<-as.numeric(as.character(calcs[[4]]))
+calcs[[5]]<-as.numeric(as.character(calcs[[5]]))
+calcs[[6]]<-as.numeric(as.character(calcs[[6]]))
+str(calcs)
+
+library(reshape)
+calcs.long.temp = reshape(calcs, idvar = "Sujet", varying = list(3:6), v.names = "Temps", direction = "long", timevar = "Probleme:Modele", times=c("ProbStat.NouvMod","ProbStat.AncMod","ProbIngé.NouvMod","ProbIngé.AncMod"))
+str(calcs.long.temp)
+calcs.long<-cbind(calcs.long.temp,t(simplify2array(strsplit(calcs.long.temp$`Probleme:Modele`,".",fixed=TRUE))))
+colnames(calcs.long)[5:6] <- c("Problème","Modèle")
+str(calcs.long)
+head(calcs.long)
 
 
-Problème Problème
-statistique ingénierie
-j = 1 j = 2
-Nouveau Ancien Nouveau Ancien
-Sujet modèle modèle modèle modèle
-i k = 1 k = 2 k = 1 k = 2
-1 Jones 3,1 7,5 2,5 5,1
-2 Williams 3,8 8,1 2,8 5,3
-3 Adams 3,0 7,6 2,0 4,9
-4 Dixon 3,4 7,8 2,7 5,5
-5 Erickson 3,3 6,9 2,5 5,4
-6 Maynes 3,6 7,8 2,4 4,8
+library(lattice)
+with(calcs.long,xyplot(Temps~Problème|Modèle,group=Sujet,type="l"))
+with(calcs.long,xyplot(Temps~Modèle|Problème,group=Sujet,type="l"))
+
+ezStats(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet)
+ezPlot(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet, x=.(Modèle), split=.(Problème))
+
+mod4 <- ezANOVA(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet, return_aov = TRUE)
+if(!require("dae")){install.packages("dae")}
+mod4.res <- dae::residuals.aovlist(mod4$aov)
+shapiro.test(mod4.res)
+with(calcs.long,xyplot(mod4.res~Problème|Modèle,group=Sujet))
+with(calcs.long,xyplot(mod4.res~Modèle|Problème,group=Sujet))
+
+#pas de normalité
+#résultats de mod4 pas utilisables
+
+ezPerm(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet)
+eMix=ezMixed(data =calcs.long, dv = Temps, fixed = .(Problème,Modèle), random = .(Sujet))
+print(eMix$summary)
+
+if(!require("emmeans")){install.packages("emmeans",type="binary")}
+library(emmeans)
+emmip(mod4$aov, ~ Problème | Modèle)
+pairs.emm_p.m <- emmeans(mod4$aov, pairwise ~ Problème | Modèle)
+pairs.emm_p.m
+plot(pairs.emm_p.m)
+
+emmip(mod4$aov, ~ Modèle | Problème)
+pairs.emm_m.p <- emmeans(mod4$aov, pairwise ~ Modèle | Problème)
+pairs.emm_m.p
+plot(pairs.emm_m.p)
+
+
+#De manière similaire à ce que nous avons fais avant.
+emm_p.m <- emmeans(mod4$aov, ~ Problème | Modèle)
+emm_p.m
+
+pairs(emm_p.m, adjust = "Holm")
+pairs(emm_p.m, adjust = "Tukey")
+plot(pairs(emm_p.m, adjust = "Tukey"))
+contrast(emm,  "tukey")
+contrast(emm,  "dunnett", ref=1)
 
 
 
-
-
+#IC boostrap
+anovaboot = ezBoot(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet, resample_within = FALSE)
+ezPlot2(anovaboot, x=.(Relevé), split=.(Type_de_presentation))
 
 
 
