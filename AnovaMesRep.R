@@ -530,9 +530,7 @@ with(calcs.long,xyplot(mod4.res~Modèle|Problème,group=Sujet))
 #pas de normalité
 #résultats de mod4 pas utilisables
 
-ezPerm(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet)
-eMix=ezMixed(data =calcs.long, dv = Temps, fixed = .(Problème,Modèle), random = .(Sujet))
-print(eMix$summary)
+resperm=ezPerm(data =calcs.long, dv = Temps, within = .(Problème,Modèle), between = , wid = Sujet)
 
 if(!require("emmeans")){install.packages("emmeans",type="binary")}
 library(emmeans)
@@ -547,7 +545,7 @@ pairs.emm_m.p
 plot(pairs.emm_m.p)
 
 
-#De manière similaire à ce que nous avons fais avant.
+#De manière similaire à ce que nous avons fait avant.
 emm_p.m <- emmeans(mod4$aov, ~ Problème | Modèle)
 emm_p.m
 
