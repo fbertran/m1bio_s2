@@ -1,4 +1,5 @@
-Exemple <- read.table(file.choose(),dec=".",sep=",",quote="\"",header=T)
+library(readxl)
+Exemple <- read_excel("~/Downloads/DonneesExempleCours3.xls")
 
 head(Exemple)
 tail(Exemple)
