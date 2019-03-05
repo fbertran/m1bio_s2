@@ -360,7 +360,7 @@ ezPlot(data =Promotion.long, dv = Ventes, within = Période, between = Campagne,
 
 mod.cours2 <- ezANOVA(data =Promotion.long, dv = Ventes, within = Période, between = Campagne, wid = Supermarché, return_aov = TRUE)
 if(!require("dae")){install.packages("dae")}
-mod.cours2.res <- dae::residuals.aovlist(mod4$aov)
+mod.cours2.res <- dae::residuals.aovlist(mod.cours2$aov)
 shapiro.test(mod.cours2.res)
 with(Promotion.long,xyplot(mod.cours2.res~Période|Campagne,group=Supermarché))
 
