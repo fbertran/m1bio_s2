@@ -29,15 +29,43 @@ exp(confint.default((model)))
 anova(model,test="Chisq")
 
 
-Exemple3<- read.csv(file.choose(),header=T)
+
+
+Exemple3<- read.csv("https://raw.githubusercontent.com/fbertran/m1bio_s2/master/MASTER2COURS5_EX3.CSV",header=T)
 Exemple3
+
+#le log dans R designe le logarithme népérien
+#= le logarithme traditionnel, comme en général
+#en anglais.
+Thetai_emp = with(Exemple3, log((N.morts+.5)/(Total-N.morts+.5)))
+Thetai_emp
+with(Exemple3, cor(Thetai_emp,Dose))
+with(Exemple3, plot(Dose,Thetai_emp))
+with(Exemple3, plot(log(Dose),Thetai_emp))
+with(Exemple3, cor(Thetai_emp,log(Dose)))
+
+#Créons le tableau réponse avec colonne (succès; échecs)
+res_exp = with(Exemple3,cbind(N.morts,Total-N.morts))
+res_exp
+
+#Attention ne pas changer l'ordre des lignes dans Exemple3
+model0<-glm(res_exp~Sexe*Dose,data=Exemple3,family=binomial(link=logit))
+model0
+#AIC: 56.27
+#Residual Deviance: 18.16
 
 model1<-glm(cbind(N.morts,Total-N.morts)~Sexe*Log.Dose.,data=Exemple3,family=binomial(link=logit))
 model1
+#AIC: 43.1
+#Residual Deviance: 4.994 	
+
 anova(model1,test="Chisq")
 summary(model1)
 confint.default((model1))
 exp(confint.default((model1)))
+
+model1bis<-glm(cbind(N.morts,Total-N.morts)~Sexe*I(log(Dose)),data=Exemple3,family=binomial(link=logit))
+model1bis
 
 model2<-glm(cbind(N.morts,Total-N.morts)~Sexe+Log.Dose.,data=Exemple3,family=binomial(link=logit))
 model2
@@ -49,6 +77,8 @@ exp(confint.default((model2)))
 anova(model2)
 
 step(model1)
+
+
 
 
 
